@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mural de Apresentação - Baixada Fluminense</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .bg-pink-gradient {
+            background: linear-gradient(135deg, #e11d48 0%, #be123c 50%, #881337 100%);
+        }
+    </style>
+</head>
+<body class="bg-rose-50 min-h-screen text-slate-800 pb-12">
+
+    <!-- Header -->
+    <header class="bg-pink-gradient text-white shadow-lg sticky top-0 z-50 border-b border-rose-400/30">
+        <div class="max-w-md mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center border border-white/20">
+                    <i class="fa-solid fa-fire text-rose-300"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-base leading-tight">Mural de Apresentação</h1>
+                    <p class="text-[10px] text-rose-200 font-medium">Baixada Fluminense • DDD 21</p>
+                </div>
+            </div>
+            <span class="text-[10px] bg-rose-950/60 px-2.5 py-1 rounded-full text-rose-200 font-mono border border-rose-500/30">+18</span>
+        </div>
+    </header>
+
+    <main class="max-w-md mx-auto px-4 mt-4 space-y-4">
+
+        <!-- Aviso de regra do grupo -->
+        <div class="bg-amber-50 border border-amber-300 text-amber-900 text-xs rounded-xl px-3 py-2.5 flex items-start gap-2 leading-snug">
+            <i class="fa-solid fa-ban mt-0.5 text-amber-600"></i>
+            <span><b>Proibido compartilhar o cartão de outras pessoas fora deste grupo.</b> Respeite a privacidade de quem se apresenta aqui.</span>
+        </div>
+
+        <!-- Aviso de ficha salva -->
+        <div id="savedNotice" class="hidden bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-xl px-3 py-2 flex items-center gap-2">
+            <i class="fa-solid fa-circle-check"></i>
+            <span>Sua ficha está salva neste aparelho. É só conferir e enviar.</span>
+        </div>
+
+        <!-- Formulário -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-rose-100">
+            <h2 class="text-base font-bold text-rose-900 mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-heart text-rose-600"></i> Monte a sua Ficha
+            </h2>
+
+            <form id="profileForm" class="space-y-3" onsubmit="return false">
+
+                <!-- Fotos -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Foto de Perfil</label>
+                    <input type="file" id="photoInput" accept="image/*" class="hidden">
+
+                    <button type="button" id="btnPhotos" class="text-xs bg-rose-50 hover:bg-rose-100 font-semibold text-rose-700 py-2 px-3 rounded-lg border border-rose-200 w-full flex items-center justify-center gap-2 transition-all">
+                        <i class="fa-solid fa-images text-rose-500"></i> Selecionar Foto
+                    </button>
+
+                    <div id="photoGallery" class="flex flex-wrap gap-2 mt-3 hidden"></div>
+                </div>
+
+                <div>
+                    <label for="p_nome" class="block text-xs font-bold text-slate-600 mb-1">Nome / Apelido</label>
+                    <input type="text" id="p_nome" placeholder="Ex: Renata" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-500 outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label for="p_idade" class="block text-xs font-bold text-slate-600 mb-1">Idade</label>
+                        <input type="number" id="p_idade" min="18" max="99" inputmode="numeric" placeholder="Ex: 35" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-500 outline-none">
+                    </div>
+                    <div>
+                        <label for="p_orientacao" class="block text-xs font-bold text-slate-600 mb-1">Orientação</label>
+                        <select id="p_orientacao" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-500 outline-none bg-white">
+                            <option value="Heterossexual">Heterossexual</option>
+                            <option value="Bissexual">Bissexual</option>
+                            <option value="Homossexual">Homossexual</option>
+                            <option value="Pansexual">Pansexual</option>
+                            <option value="Assexual">Assexual</option>
+                            <option value="Outro">Outro</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="p_cidade" class="block text-xs font-bold text-slate-600 mb-1">Cidade / Região</label>
+                    <input type="text" id="p_cidade" placeholder="Ex: Duque de Caxias" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-500 outline-none">
+                </div>
+
+                <div>
+                    <label for="p_busca" class="block text-xs font-bold text-slate-600 mb-1">Busca</label>
+                    <input type="text" id="p_busca" placeholder="Ex: amizade, conversar, pegação" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-500 outline-none">
+                    <div class="flex flex-wrap gap-1 mt-1">
+                        <button type="button" data-busca="amizade" class="text-[10px] bg-rose-50 hover:bg-rose-100 text-rose-700 px-2 py-0.5 rounded border border-rose-200">+ Amizade</button>
+                        <button type="button" data-busca="conversar" class="text-[10px] bg-rose-50 hover:bg-rose-100 text-rose-700 px-2 py-0.5 rounded border border-rose-200">+ Conversar</button>
+                        <button type="button" data-busca="pegação" class="text-[10px] bg-rose-50 hover:bg-rose-100 text-rose-700 px-2 py-0.5 rounded border border-rose-200">+ Pegação</button>
+                        <button type="button" data-busca="relacionamento" class="text-[10px] bg-rose-50 hover:bg-rose-100 text-rose-700 px-2 py-0.5 rounded border border-rose-200">+ Relacionamento</button>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="p_sobre" class="block text-xs font-bold text-slate-600 mb-1">Sobre você</label>
+                    <textarea id="p_sobre" rows="3" placeholder="Ex: Gosto de sair para comer, cinema, rock..." class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-500 outline-none resize-none"></textarea>
+                </div>
+
+                <div>
+                    <label for="p_privado" class="block text-xs font-bold text-slate-600 mb-1">Privado</label>
+                    <select id="p_privado" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-500 outline-none bg-white">
+                        <option value="Somente com autorização">Somente com autorização</option>
+                        <option value="Liberado">Liberado</option>
+                        <option value="Não chamar">Não chamar</option>
+                    </select>
+                </div>
+
+                <!-- Confirmação de maioridade -->
+                <label class="flex items-start gap-2 text-xs text-slate-600 pt-1">
+                    <input type="checkbox" id="p_maior" class="mt-0.5 accent-rose-600">
+                    <span>Declaro que tenho 18 anos ou mais.</span>
+                </label>
+            </form>
+        </div>
+
+        <!-- Envio -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-rose-100 space-y-2">
+            <button id="btnOpenGroup" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 px-4 rounded-xl text-sm flex items-center justify-center gap-2 shadow-md transition-all">
+                <i class="fa-brands fa-whatsapp text-lg"></i> Enviar Apresentação no Grupo
+            </button>
+            <p class="text-[11px] text-slate-500 text-center leading-snug">Vai aparecer um aviso explicando como colar a ficha no grupo.</p>
+
+        </div>
+
+    </main>
+
+    <!-- Janela de instruções -->
+    <div id="modal" class="hidden fixed inset-0 z-[60] bg-black/60 flex items-center justify-center px-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-5 max-h-[92vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+            <h3 id="modalTitle" class="text-base font-bold text-rose-900 flex items-center gap-2 mb-2">
+                <i class="fa-brands fa-whatsapp text-emerald-600 text-lg"></i> Confira antes de enviar
+            </h3>
+            <p class="text-xs text-slate-500 mb-2">É assim que sua apresentação vai aparecer no grupo:</p>
+            <img id="previewImg" alt="Prévia do cartão" class="hidden w-full max-h-[48vh] object-contain rounded-xl border border-rose-100 bg-slate-100">
+            <pre id="previewText" class="hidden whitespace-pre-wrap break-words font-sans text-xs text-slate-800 bg-slate-50 border border-slate-200 rounded-xl p-3 max-h-[40vh] overflow-y-auto"></pre>
+            <p class="text-sm text-slate-600 leading-relaxed mt-3">
+                Se estiver certo, toque em <b>Abrir WhatsApp</b>. A apresentação será copiada e, quando o grupo abrir, cole e envie:
+            </p>
+            <div class="text-sm text-slate-800 bg-rose-50 border border-rose-100 rounded-lg px-3 py-2 mt-2 leading-relaxed space-y-1.5">
+                <p><i class="fa-solid fa-computer text-rose-500 w-4"></i> <b>No computador:</b> aperte <b>Ctrl+V</b> (para colar) na caixa de mensagem.</p>
+                <p><i class="fa-solid fa-mobile-screen text-rose-500 w-4"></i> <b>No celular:</b> pressione a caixa de mensagem e toque em <b>Colar</b>.</p>
+            </div>
+            <p class="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-3 leading-snug">
+                <i class="fa-solid fa-ban text-amber-600"></i> <b>Lembrete:</b> é proibido compartilhar cartões de outras pessoas fora deste grupo.
+            </p>
+            <div class="grid grid-cols-2 gap-2 mt-4">
+                <button id="btnCancel" class="text-sm font-semibold py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600">Voltar e corrigir</button>
+                <button id="btnConfirm" class="text-sm font-bold py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white">Abrir WhatsApp</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Aviso rápido -->
+    <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 max-w-xs w-[90%] bg-slate-900 text-white text-xs rounded-xl px-4 py-3 shadow-lg hidden z-50 text-center"></div>
+
+    <script>
+        const GROUP_WHATSAPP_LINK = "https://chat.whatsapp.com/Jd5McqOjereFPVV5dFDMOO";
+        const STORAGE_KEY = "mural_profile_v2";
+        const MAX_SIDE = 900;      // lado maior da foto, em pixels
+        const JPEG_QUALITY = 0.78;
+
+        const FIELDS = ['p_nome', 'p_idade', 'p_cidade', 'p_busca', 'p_orientacao', 'p_sobre', 'p_privado'];
+        let photos = []; // dataURLs já reduzidas
+
+        const $ = id => document.getElementById(id);
+
+        /* ---------- Avisos ---------- */
+        let toastTimer;
+        function toast(msg) {
+            const t = $('toast');
+            t.textContent = msg;
+            t.classList.remove('hidden');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => t.classList.add('hidden'), 4000);
+        }
+
+        /* ---------- Salvar / carregar ---------- */
+        function save() {
+            const data = { photos, maior: $('p_maior').checked };
+            FIELDS.forEach(id => data[id] = $(id).value);
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                return true;
+            } catch (e) {
+                // Espaço cheio: salva sem as fotos
+                try {
+                    data.photos = [];
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                    toast("Não coube salvar as fotos neste aparelho. O texto foi salvo.");
+                } catch (e2) {}
+                return false;
+            }
+        }
+
+        function load() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return;
+                const data = JSON.parse(raw);
+                FIELDS.forEach(id => { if (data[id] !== undefined && data[id] !== '') $(id).value = data[id]; });
+                $('p_maior').checked = !!data.maior;
+                photos = Array.isArray(data.photos) ? data.photos.slice(0, 1) : [];
+                if (data.p_nome || photos.length) $('savedNotice').classList.remove('hidden');
+            } catch (e) {
+                localStorage.removeItem(STORAGE_KEY);
+            }
+        }
+
+        /* ---------- Fotos ---------- */
+        function resizeImage(file) {
+            return new Promise((resolve, reject) => {
+                const url = URL.createObjectURL(file);
+                const img = new Image();
+                img.onload = () => {
+                    const scale = Math.min(1, MAX_SIDE / Math.max(img.width, img.height));
+                    const canvas = document.createElement('canvas');
+                    canvas.width = Math.round(img.width * scale);
+                    canvas.height = Math.round(img.height * scale);
+                    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                    URL.revokeObjectURL(url);
+                    resolve(canvas.toDataURL('image/jpeg', JPEG_QUALITY));
+                };
+                img.onerror = () => { URL.revokeObjectURL(url); reject(); };
+                img.src = url;
+            });
+        }
+
+        async function handlePhotos(event) {
+            const file = event.target.files[0];
+            event.target.value = '';
+            if (!file) return;
+            try {
+                photos = [await resizeImage(file)]; // só uma foto: a nova substitui a anterior
+            } catch (e) {
+                toast("Não consegui ler essa foto. Tente outra.");
+                return;
+            }
+            renderGallery();
+            save();
+        }
+
+        function renderGallery() {
+            const gallery = $('photoGallery');
+            gallery.innerHTML = '';
+            if (!photos.length) { gallery.classList.add('hidden'); return; }
+            gallery.classList.remove('hidden');
+            photos.forEach((src, index) => {
+                const item = document.createElement('div');
+                item.className = 'relative w-16 h-16 rounded-lg overflow-hidden border border-rose-200 shadow-sm';
+                const img = document.createElement('img');
+                img.src = src;
+                img.className = 'w-full h-full object-cover';
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.setAttribute('aria-label', 'Remover foto');
+                btn.className = 'absolute top-0.5 right-0.5 bg-rose-600 text-white w-4 h-4 rounded-full flex items-center justify-center text-[10px] shadow';
+                btn.innerHTML = '&times;';
+                btn.addEventListener('click', () => { photos.splice(index, 1); renderGallery(); save(); });
+                item.append(img, btn);
+                gallery.appendChild(item);
+            });
+        }
+
+        function dataUrlToFile(dataUrl, name) {
+            const [head, body] = dataUrl.split(',');
+            const mime = head.match(/:(.*?);/)[1];
+            const bin = atob(body);
+            const bytes = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+            return new File([bytes], name, { type: mime });
+        }
+
+        /* ---------- Mensagem ---------- */
+        function buildMessage() {
+            const v = id => $(id).value.trim();
+            const linhas = ['🪪 APRESENTAÇÃO (+18)'];
+            if (v('p_nome'))   linhas.push('🔻 Nome/apelido: ' + v('p_nome'));
+            if (v('p_idade'))  linhas.push('🎂 Idade: ' + v('p_idade') + ' anos');
+            if (v('p_cidade')) linhas.push('📍 Cidade/região: ' + v('p_cidade'));
+            if (v('p_busca'))  linhas.push('💋 Busca: ' + v('p_busca'));
+            linhas.push('❤️ ' + v('p_orientacao'));
+            if (v('p_sobre'))  linhas.push('⛓️ Sobre você: ' + v('p_sobre'));
+            linhas.push('📩 Privado: ' + v('p_privado'));
+            linhas.push('🚫 Proibido compartilhar fora do grupo.');
+            return linhas.join('\n\n');
+        }
+
+        /* ---------- Cartão (foto + dados em uma imagem) ---------- */
+        function loadImg(src) {
+            return new Promise((res, rej) => {
+                const i = new Image();
+                i.onload = () => res(i);
+                i.onerror = rej;
+                i.src = src;
+            });
+        }
+
+        function wrapText(ctx, text, maxW) {
+            const lines = [];
+            let cur = '';
+            text.split(/\s+/).forEach(w => {
+                const t = cur ? cur + ' ' + w : w;
+                if (ctx.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; }
+                else cur = t;
+            });
+            if (cur) lines.push(cur);
+            return lines;
+        }
+
+        async function makeCard(type = 'image/jpeg') {
+            const W = 1080, H = 1350, pad = 56; // formato retrato 4:5
+            const MIN_PHOTO = 600;
+            const font = '"Segoe UI", Roboto, "Noto Color Emoji", "Apple Color Emoji", sans-serif';
+            const img = await loadImg(photos[0]);
+
+            const v = id => $(id).value.trim();
+            const nome = v('p_nome') || 'Sem nome';
+            const sub = [v('p_idade') ? v('p_idade') + ' anos' : '', v('p_cidade')].filter(Boolean).join('  •  ');
+
+            const rows = [];
+            rows.push(['❤️ Orientação', v('p_orientacao')]);
+            if (v('p_sobre')) rows.push(['⛓️ Sobre', v('p_sobre')]);
+            rows.push(['📩 Privado', v('p_privado')]);
+
+            const maxW = W - pad * 2;
+            const m = document.createElement('canvas').getContext('2d');
+
+            // Nome: tamanho grande, reduz se não couber em até 2 linhas
+            let nameSize = 92, nameLines = [];
+            while (nameSize > 48) {
+                m.font = '800 ' + nameSize + 'px ' + font;
+                nameLines = wrapText(m, nome, maxW);
+                if (nameLines.length <= 2 && nameLines.every(l => m.measureText(l).width <= maxW)) break;
+                nameSize -= 6;
+            }
+            const nameLH = Math.round(nameSize * 1.12);
+
+            m.font = '600 42px ' + font;
+            const subLines = sub ? wrapText(m, sub, maxW) : [];
+
+            m.font = '600 40px ' + font;
+            const layout = rows.map(([label, val]) => ({ label, lines: wrapText(m, val, maxW) }));
+
+            // Busca em etiquetas (pílulas)
+            const tags = v('p_busca').split(/[,;\/]+/).map(t => t.trim()).filter(Boolean).slice(0, 8)
+                .map(t => t.charAt(0).toUpperCase() + t.slice(1));
+            const pillH = 64, gapX = 14, gapY = 14, padX = 28;
+            m.font = '700 34px ' + font;
+            const pills = [];
+            let px = pad, py = 0;
+            tags.forEach(t => {
+                const w = Math.min(maxW, Math.ceil(m.measureText(t).width) + padX * 2);
+                if (px + w > W - pad && px > pad) { px = pad; py += pillH + gapY; }
+                pills.push({ t, x: px, y: py, w });
+                px += w + gapX;
+            });
+            const pillsH = pills.length ? py + pillH : 0;
+            const buscaH = pills.length ? 40 + pillsH + 26 : 0;
+
+            const topH = pad + nameLines.length * nameLH + (subLines.length ? 14 + subLines.length * 54 : 0) + 40;
+            const calcRowsH = () => layout.reduce((t, r) => t + 40 + r.lines.length * 52 + 22, 0);
+            const footerH = 110;
+            const calcPanelH = () => topH + buscaH + calcRowsH() + footerH + 36;
+
+            // O painel se adapta: se ficar grande demais, encurta o "Sobre" (mínimo 2 linhas) para a foto ter espaço
+            const sobre = layout.find(r => r.label.includes('Sobre'));
+            m.font = '600 40px ' + font;
+            while (sobre && sobre.lines.length > 2 && calcPanelH() > H - MIN_PHOTO) {
+                sobre.lines.pop();
+                let last = sobre.lines[sobre.lines.length - 1];
+                while (last.length > 1 && m.measureText(last + '…').width > maxW) last = last.slice(0, -1);
+                sobre.lines[sobre.lines.length - 1] = last.trimEnd() + '…';
+            }
+
+            const panelH = calcPanelH();
+            const photoH = Math.max(300, H - panelH);
+
+            const canvas = document.createElement('canvas');
+            canvas.width = W;
+            canvas.height = H;
+            const ctx = canvas.getContext('2d');
+            ctx.textBaseline = 'alphabetic';
+
+            // Fundo: a própria foto desfocada (preenche o que sobrar em volta)
+            const tc = document.createElement('canvas');
+            tc.width = 36;
+            tc.height = Math.max(8, Math.round(36 * photoH / W));
+            const tcx = tc.getContext('2d');
+            const ts = Math.max(tc.width / img.width, tc.height / img.height);
+            tcx.drawImage(img, (tc.width - img.width * ts) / 2, (tc.height - img.height * ts) / 2, img.width * ts, img.height * ts);
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(tc, 0, 0, W, photoH);
+            ctx.fillStyle = 'rgba(0,0,0,0.25)';
+            ctx.fillRect(0, 0, W, photoH);
+
+            // Foto principal inteira, no centro, sem cortar
+            const fit = Math.min(W / img.width, photoH / img.height);
+            const dw = img.width * fit, dh = img.height * fit;
+            ctx.drawImage(img, (W - dw) / 2, (photoH - dh) / 2, dw, dh);
+
+            // Painel
+            const g = ctx.createLinearGradient(0, photoH, W, H);
+            g.addColorStop(0, '#be123c');
+            g.addColorStop(1, '#881337');
+            ctx.fillStyle = g;
+            ctx.fillRect(0, photoH, W, H - photoH);
+
+            let y = photoH + pad;
+
+            // Nome grande
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '800 ' + nameSize + 'px ' + font;
+            nameLines.forEach(line => { ctx.fillText(line, pad, y + nameSize * 0.85); y += nameLH; });
+
+            // Idade e cidade
+            if (subLines.length) {
+                y += 14;
+                ctx.fillStyle = '#ffe4e6';
+                ctx.font = '600 42px ' + font;
+                subLines.forEach(line => { ctx.fillText(line, pad, y + 38); y += 54; });
+            }
+
+            // Divisória
+            y += 16;
+            ctx.fillStyle = 'rgba(255,255,255,0.28)';
+            ctx.fillRect(pad, y, W - pad * 2, 2);
+            y += 24;
+
+            // Busca em etiquetas coloridas
+            if (pills.length) {
+                const colors = ['#fecdd3', '#fde68a', '#bbf7d0', '#bfdbfe', '#e9d5ff'];
+                ctx.fillStyle = '#fecdd3';
+                ctx.font = '600 28px ' + font;
+                ctx.fillText('💋 Busca', pad, y + 24);
+                y += 40;
+                pills.forEach((p, i) => {
+                    ctx.fillStyle = colors[i % colors.length];
+                    ctx.beginPath();
+                    const x0 = p.x, y0 = y + p.y, r = pillH / 2;
+                    ctx.moveTo(x0 + r, y0);
+                    ctx.arcTo(x0 + p.w, y0, x0 + p.w, y0 + pillH, r);
+                    ctx.arcTo(x0 + p.w, y0 + pillH, x0, y0 + pillH, r);
+                    ctx.arcTo(x0, y0 + pillH, x0, y0, r);
+                    ctx.arcTo(x0, y0, x0 + p.w, y0, r);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.fillStyle = '#4c0519';
+                    ctx.font = '700 34px ' + font;
+                    ctx.fillText(p.t, x0 + padX, y0 + 43);
+                });
+                y += pillsH + 26;
+            }
+
+            // Demais campos
+            layout.forEach(r => {
+                ctx.fillStyle = '#fecdd3';
+                ctx.font = '600 28px ' + font;
+                ctx.fillText(r.label, pad, y + 24);
+                y += 40;
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '600 40px ' + font;
+                r.lines.forEach(line => { ctx.fillText(line, pad, y + 34); y += 52; });
+                y += 22;
+            });
+
+            // Rodapé: local, data e aviso
+            ctx.fillStyle = 'rgba(255,255,255,0.28)';
+            ctx.fillRect(pad, y, W - pad * 2, 2);
+            y += 26;
+            const hoje = new Date().toLocaleDateString('pt-BR');
+            ctx.fillStyle = '#ffe4e6';
+            ctx.font = '600 30px ' + font;
+            ctx.textAlign = 'left';
+            ctx.fillText('Baixada Fluminense • DDD 21', pad, y + 28);
+            ctx.textAlign = 'right';
+            ctx.fillText(hoje, W - pad, y + 28);
+            ctx.textAlign = 'left';
+            y += 50;
+            ctx.fillStyle = '#fecdd3';
+            ctx.font = '600 26px ' + font;
+            ctx.fillText('🚫 Proibido compartilhar este cartão fora do grupo.', pad, y + 24);
+
+            return new Promise((resolve, reject) => {
+                canvas.toBlob(b => b
+                    ? resolve(new File([b], type === 'image/png' ? 'apresentacao.png' : 'apresentacao.jpg', { type }))
+                    : reject(new Error('canvas')), type, 0.88);
+            });
+        }
+
+        /* ---------- Validação ---------- */
+        function validate() {
+            if (!$('p_nome').value.trim()) { toast("Preencha o nome ou apelido."); $('p_nome').focus(); return false; }
+            const idade = parseInt($('p_idade').value, 10);
+            if (!idade || idade < 18) { toast("A idade precisa ser 18 ou mais."); $('p_idade').focus(); return false; }
+            if (!$('p_maior').checked) { toast("Marque a declaração de maioridade."); return false; }
+            return true;
+        }
+
+        /* ---------- Copiar ---------- */
+        async function copyText(text) {
+            try {
+                await navigator.clipboard.writeText(text);
+                return true;
+            } catch (e) {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                let ok = false;
+                try { ok = document.execCommand('copy'); } catch (e2) {}
+                document.body.removeChild(ta);
+                return ok;
+            }
+        }
+
+        /* ---------- Enviar ---------- */
+        async function send() {
+            if (!validate()) return;
+            save();
+            const text = buildMessage();
+
+            // Começa a copiar já no toque (sem esperar), como garantia caso o WhatsApp ignore o texto
+            const copied = copyText(text);
+
+            const files = photos.map((p, i) => dataUrlToFile(p, 'foto' + (i + 1) + '.jpg'));
+
+            // 1) Fotos + texto
+            if (files.length && navigator.canShare && navigator.canShare({ files })) {
+                try {
+                    await navigator.share({ files, text });
+                    return;
+                } catch (e) {
+                    if (e && e.name === 'AbortError') return; // pessoa cancelou
+                }
+            }
+
+            // 2) Só texto
+            if (navigator.share) {
+                try {
+                    await navigator.share({ text });
+                    return;
+                } catch (e) {
+                    if (e && e.name === 'AbortError') return;
+                }
+            }
+
+            // 3) Sem compartilhamento nativo (computador): copia e abre o grupo
+            await copied;
+            toast("Ficha copiada! No grupo, cole a mensagem e envie.");
+            setTimeout(() => window.open(GROUP_WHATSAPP_LINK, '_blank'), 1200);
+        }
+
+        function isMobileDevice() {
+            return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+                (navigator.maxTouchPoints > 1 && /Mac/.test(navigator.platform));
+        }
+
+        // Passo 1: valida e mostra a janela de instruções
+        let previewUrl = null;
+
+        async function openGroup() {
+            if (!validate()) return;
+            save();
+
+            const img = $('previewImg'), pre = $('previewText');
+            img.classList.add('hidden');
+            pre.classList.add('hidden');
+            if (previewUrl) { URL.revokeObjectURL(previewUrl); previewUrl = null; }
+
+            let showedImage = false;
+            if (photos.length) {
+                try {
+                    const card = await makeCard('image/jpeg');
+                    previewUrl = URL.createObjectURL(card);
+                    img.src = previewUrl;
+                    img.classList.remove('hidden');
+                    showedImage = true;
+                } catch (e) {}
+            }
+            if (!showedImage) {
+                pre.textContent = buildMessage();
+                pre.classList.remove('hidden');
+            }
+            $('modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            $('modal').classList.add('hidden');
+            if (previewUrl) { URL.revokeObjectURL(previewUrl); previewUrl = null; }
+        }
+
+        // Passo 2: copia (cartão com foto, ou texto) e abre o grupo
+        async function confirmOpen() {
+            const text = buildMessage();
+            let ok = false;
+            if (photos.length && window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {
+                try {
+                    await navigator.clipboard.write([new ClipboardItem({ 'image/png': makeCard('image/png') })]);
+                    ok = true;
+                } catch (e) {}
+            }
+            if (!ok) await copyText(text);
+            closeModal();
+            window.location.href = GROUP_WHATSAPP_LINK;
+        }
+
+        async function copyOnly() {
+            const ok = await copyText(buildMessage());
+            toast(ok ? "Texto copiado! Cole no grupo." : "Não consegui copiar. Tente enviar pelo botão principal.");
+        }
+
+        function clearAll() {
+            if (!confirm("Apagar a ficha salva neste aparelho?")) return;
+            localStorage.removeItem(STORAGE_KEY);
+            FIELDS.forEach(id => { const el = $(id); el.value = el.tagName === 'SELECT' ? el.options[0].value : ''; });
+            $('p_maior').checked = false;
+            photos = [];
+            renderGallery();
+            $('savedNotice').classList.add('hidden');
+        }
+
+        /* ---------- Eventos ---------- */
+        $('btnPhotos').addEventListener('click', () => $('photoInput').click());
+        $('photoInput').addEventListener('change', handlePhotos);
+        $('btnOpenGroup').addEventListener('click', openGroup);
+        $('btnConfirm').addEventListener('click', confirmOpen);
+        $('btnCancel').addEventListener('click', closeModal);
+        $('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
+
+        $('p_maior').addEventListener('change', save);
+        FIELDS.forEach(id => {
+            $(id).addEventListener('input', save);
+            $(id).addEventListener('change', save);
+        });
+        document.querySelectorAll('[data-busca]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const input = $('p_busca');
+                const text = btn.dataset.busca;
+                if (!input.value.trim()) input.value = text;
+                else if (!input.value.includes(text)) input.value += ', ' + text;
+                save();
+            });
+        });
+
+        load();
+        renderGallery();
+    </script>
+</body>
+</html>
