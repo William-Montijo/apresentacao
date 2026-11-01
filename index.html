@@ -58,9 +58,9 @@
                     <label class="block text-xs font-bold text-slate-600 mb-1">Foto de Perfil</label>
                     <input type="file" id="photoInput" accept="image/*" class="hidden">
 
-                    <button type="button" id="btnPhotos" class="text-xs bg-rose-50 hover:bg-rose-100 font-semibold text-rose-700 py-2 px-3 rounded-lg border border-rose-200 w-full flex items-center justify-center gap-2 transition-all">
+                    <label for="photoInput" class="cursor-pointer text-xs bg-rose-50 hover:bg-rose-100 font-semibold text-rose-700 py-2.5 px-3 rounded-lg border border-rose-200 w-full flex items-center justify-center gap-2 transition-all select-none">
                         <i class="fa-solid fa-images text-rose-500"></i> Selecionar Foto
-                    </button>
+                    </label>
 
                     <div id="photoGallery" class="flex flex-wrap gap-2 mt-3 hidden"></div>
                 </div>
@@ -94,6 +94,11 @@
                 </div>
 
                 <div>
+                    <label for="p_insta" class="block text-xs font-bold text-slate-600 mb-1">Instagram <span class="font-normal text-slate-400">(opcional)</span></label>
+                    <input type="text" id="p_insta" placeholder="@seuusuario" autocapitalize="none" autocomplete="off" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-500 outline-none">
+                </div>
+
+                <div>
                     <label for="p_busca" class="block text-xs font-bold text-slate-600 mb-1">Busca</label>
                     <input type="text" id="p_busca" placeholder="Ex: amizade, conversar, pegação" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-500 outline-none">
                     <div class="flex flex-wrap gap-1 mt-1">
@@ -105,8 +110,11 @@
                 </div>
 
                 <div>
-                    <label for="p_sobre" class="block text-xs font-bold text-slate-600 mb-1">Sobre você</label>
-                    <textarea id="p_sobre" rows="3" placeholder="Ex: Gosto de sair para comer, cinema, rock..." class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-500 outline-none resize-none"></textarea>
+                    <div class="flex justify-between items-center mb-1">
+                        <label for="p_sobre" class="block text-xs font-bold text-slate-600">Sobre você</label>
+                        <span id="charCount" class="text-[11px] text-slate-400 font-mono">0 / 200</span>
+                    </div>
+                    <textarea id="p_sobre" rows="2" maxlength="200" placeholder="Ex: Gosto de sair para comer, cinema, rock..." class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-500 outline-none resize-none"></textarea>
                 </div>
 
                 <div>
@@ -132,7 +140,6 @@
                 <i class="fa-brands fa-whatsapp text-lg"></i> Enviar Apresentação no Grupo
             </button>
             <p class="text-[11px] text-slate-500 text-center leading-snug">Vai aparecer um aviso explicando como colar a ficha no grupo.</p>
-
         </div>
 
     </main>
@@ -169,15 +176,13 @@
     <script>
         const GROUP_WHATSAPP_LINK = "https://chat.whatsapp.com/Jd5McqOjereFPVV5dFDMOO";
         const STORAGE_KEY = "mural_profile_v2";
-        const MAX_SIDE = 900;      // lado maior da foto, em pixels
-        const JPEG_QUALITY = 0.78;
+        const MAX_SIDE = 2560; // Suporte ampliado para imagens em alta resolução
 
-        const FIELDS = ['p_nome', 'p_idade', 'p_cidade', 'p_busca', 'p_orientacao', 'p_sobre', 'p_privado'];
-        let photos = []; // dataURLs já reduzidas
+        const FIELDS = ['p_nome', 'p_idade', 'p_cidade', 'p_insta', 'p_busca', 'p_orientacao', 'p_sobre', 'p_privado'];
+        let photos = [];
 
         const $ = id => document.getElementById(id);
 
-        /* ---------- Avisos ---------- */
         let toastTimer;
         function toast(msg) {
             const t = $('toast');
@@ -187,7 +192,17 @@
             toastTimer = setTimeout(() => t.classList.add('hidden'), 4000);
         }
 
-        /* ---------- Salvar / carregar ---------- */
+        function updateCharCount() {
+            const len = $('p_sobre').value.length;
+            const counter = $('charCount');
+            counter.textContent = len + " / 200";
+            if (len >= 200) {
+                counter.className = "text-[11px] text-rose-600 font-bold font-mono";
+            } else {
+                counter.className = "text-[11px] text-slate-400 font-mono";
+            }
+        }
+
         function save() {
             const data = { photos, maior: $('p_maior').checked };
             FIELDS.forEach(id => data[id] = $(id).value);
@@ -195,7 +210,6 @@
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
                 return true;
             } catch (e) {
-                // Espaço cheio: salva sem as fotos
                 try {
                     data.photos = [];
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -214,12 +228,12 @@
                 $('p_maior').checked = !!data.maior;
                 photos = Array.isArray(data.photos) ? data.photos.slice(0, 1) : [];
                 if (data.p_nome || photos.length) $('savedNotice').classList.remove('hidden');
+                updateCharCount();
             } catch (e) {
                 localStorage.removeItem(STORAGE_KEY);
             }
         }
 
-        /* ---------- Fotos ---------- */
         function resizeImage(file) {
             return new Promise((resolve, reject) => {
                 const url = URL.createObjectURL(file);
@@ -229,9 +243,12 @@
                     const canvas = document.createElement('canvas');
                     canvas.width = Math.round(img.width * scale);
                     canvas.height = Math.round(img.height * scale);
-                    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                    const ctx = canvas.getContext('2d');
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                     URL.revokeObjectURL(url);
-                    resolve(canvas.toDataURL('image/jpeg', JPEG_QUALITY));
+                    resolve(canvas.toDataURL('image/jpeg', 0.98));
                 };
                 img.onerror = () => { URL.revokeObjectURL(url); reject(); };
                 img.src = url;
@@ -243,7 +260,7 @@
             event.target.value = '';
             if (!file) return;
             try {
-                photos = [await resizeImage(file)]; // só uma foto: a nova substitui a anterior
+                photos = [await resizeImage(file)];
             } catch (e) {
                 toast("Não consegui ler essa foto. Tente outra.");
                 return;
@@ -283,22 +300,29 @@
             return new File([bytes], name, { type: mime });
         }
 
-        /* ---------- Mensagem ---------- */
+        function cleanInsta() {
+            return $('p_insta').value.trim()
+                .replace(/^https?:\/\/(www\.)?instagram\.com\//i, '')
+                .replace(/[\/?].*$/, '')
+                .replace(/^@+/, '')
+                .replace(/[^A-Za-z0-9._]/g, '');
+        }
+
         function buildMessage() {
             const v = id => $(id).value.trim();
             const linhas = ['🪪 APRESENTAÇÃO (+18)'];
             if (v('p_nome'))   linhas.push('🔻 Nome/apelido: ' + v('p_nome'));
             if (v('p_idade'))  linhas.push('🎂 Idade: ' + v('p_idade') + ' anos');
-            if (v('p_cidade')) linhas.push('📍 Cidade/região: ' + v('p_cidade'));
+            if (v('p_cidade'))linhas.push('📍 Cidade/região: ' + v('p_cidade'));
+            if (cleanInsta())  linhas.push('📷 Instagram: @' + cleanInsta());
             if (v('p_busca'))  linhas.push('💋 Busca: ' + v('p_busca'));
             linhas.push('❤️ ' + v('p_orientacao'));
-            if (v('p_sobre'))  linhas.push('⛓️ Sobre você: ' + v('p_sobre'));
+            if (v('p_sobre'))  linhas.push('⛓️ Sobre você: ' + v('p_sobre').slice(0, 200));
             linhas.push('📩 Privado: ' + v('p_privado'));
-            linhas.push('🚫 Proibido compartilhar fora do grupo.');
+            linhas.push('🚫 Proibido compartilhar esta imagem sem a autorização do titular.');
             return linhas.join('\n\n');
         }
 
-        /* ---------- Cartão (foto + dados em uma imagem) ---------- */
         function loadImg(src) {
             return new Promise((res, rej) => {
                 const i = new Image();
@@ -320,9 +344,10 @@
             return lines;
         }
 
-        async function makeCard(type = 'image/jpeg') {
-            const W = 1080, H = 1350, pad = 56; // formato retrato 4:5
-            const MIN_PHOTO = 600;
+        async function makeCard(type = 'image/png') {
+            // Escala 2x (4K: 2160 x 2700) para máxima nitidez e qualidade impecável de impressão/compartilhamento
+            const SCALE = 2;
+            const W = 1080 * SCALE, H = 1350 * SCALE, pad = 56 * SCALE;
             const font = '"Segoe UI", Roboto, "Noto Color Emoji", "Apple Color Emoji", sans-serif';
             const img = await loadImg(photos[0]);
 
@@ -330,35 +355,35 @@
             const nome = v('p_nome') || 'Sem nome';
             const sub = [v('p_idade') ? v('p_idade') + ' anos' : '', v('p_cidade')].filter(Boolean).join('  •  ');
 
-            const rows = [];
-            rows.push(['❤️ Orientação', v('p_orientacao')]);
-            if (v('p_sobre')) rows.push(['⛓️ Sobre', v('p_sobre')]);
-            rows.push(['📩 Privado', v('p_privado')]);
-
             const maxW = W - pad * 2;
             const m = document.createElement('canvas').getContext('2d');
 
-            // Nome: tamanho grande, reduz se não couber em até 2 linhas
-            let nameSize = 92, nameLines = [];
-            while (nameSize > 48) {
+            let nameSize = 68 * SCALE, nameLines = [];
+            while (nameSize > 38 * SCALE) {
                 m.font = '800 ' + nameSize + 'px ' + font;
                 nameLines = wrapText(m, nome, maxW);
                 if (nameLines.length <= 2 && nameLines.every(l => m.measureText(l).width <= maxW)) break;
-                nameSize -= 6;
+                nameSize -= 4 * SCALE;
             }
-            const nameLH = Math.round(nameSize * 1.12);
+            const nameLH = Math.round(nameSize * 1.1);
 
-            m.font = '600 42px ' + font;
+            m.font = '600 ' + (32 * SCALE) + 'px ' + font;
             const subLines = sub ? wrapText(m, sub, maxW) : [];
 
-            m.font = '600 40px ' + font;
-            const layout = rows.map(([label, val]) => ({ label, lines: wrapText(m, val, maxW) }));
+            m.font = '600 ' + (30 * SCALE) + 'px ' + font;
+            const gapCol = 40 * SCALE, colW = (maxW - gapCol) / 2;
+            const pair = [['❤️ Orientação', v('p_orientacao')], ['📩 Privado', v('p_privado')]]
+                .map(([label, val]) => ({ label, lines: wrapText(m, val, colW) }));
+            const pairLines = Math.max(...pair.map(c => c.lines.length));
 
-            // Busca em etiquetas (pílulas)
+            const sobreTexto = v('p_sobre').slice(0, 200);
+            const sobreLines = sobreTexto ? wrapText(m, sobreTexto, maxW) : [];
+            const instaVal = cleanInsta();
+
             const tags = v('p_busca').split(/[,;\/]+/).map(t => t.trim()).filter(Boolean).slice(0, 8)
                 .map(t => t.charAt(0).toUpperCase() + t.slice(1));
-            const pillH = 64, gapX = 14, gapY = 14, padX = 28;
-            m.font = '700 34px ' + font;
+            const pillH = 48 * SCALE, gapX = 12 * SCALE, gapY = 12 * SCALE, padX = 24 * SCALE;
+            m.font = '700 ' + (26 * SCALE) + 'px ' + font;
             const pills = [];
             let px = pad, py = 0;
             tags.forEach(t => {
@@ -368,85 +393,77 @@
                 px += w + gapX;
             });
             const pillsH = pills.length ? py + pillH : 0;
-            const buscaH = pills.length ? 40 + pillsH + 26 : 0;
+            const buscaH = pills.length ? 30 * SCALE + pillsH + 18 * SCALE : 0;
 
-            const topH = pad + nameLines.length * nameLH + (subLines.length ? 14 + subLines.length * 54 : 0) + 40;
-            const calcRowsH = () => layout.reduce((t, r) => t + 40 + r.lines.length * 52 + 22, 0);
-            const footerH = 110;
-            const calcPanelH = () => topH + buscaH + calcRowsH() + footerH + 36;
-
-            // O painel se adapta: se ficar grande demais, encurta o "Sobre" (mínimo 2 linhas) para a foto ter espaço
-            const sobre = layout.find(r => r.label.includes('Sobre'));
-            m.font = '600 40px ' + font;
-            while (sobre && sobre.lines.length > 2 && calcPanelH() > H - MIN_PHOTO) {
-                sobre.lines.pop();
-                let last = sobre.lines[sobre.lines.length - 1];
-                while (last.length > 1 && m.measureText(last + '…').width > maxW) last = last.slice(0, -1);
-                sobre.lines[sobre.lines.length - 1] = last.trimEnd() + '…';
-            }
+            const topH = 30 * SCALE + nameLines.length * nameLH + (subLines.length ? 10 * SCALE + subLines.length * (40 * SCALE) : 0) + 24 * SCALE;
+            const pairH = 30 * SCALE + pairLines * (40 * SCALE) + 18 * SCALE;
+            const calcSobreH = () => sobreLines.length ? 30 * SCALE + sobreLines.length * (40 * SCALE) + 18 * SCALE : 0;
+            const calcInstaH = () => instaVal ? 28 * SCALE + 34 * SCALE + 16 * SCALE : 0;
+            const footerH = 35 * SCALE + 24 * SCALE;
+            const calcPanelH = () => topH + buscaH + pairH + calcSobreH() + calcInstaH() + footerH;
 
             const panelH = calcPanelH();
-            const photoH = Math.max(300, H - panelH);
+            const photoH = Math.max(460 * SCALE, H - panelH);
 
             const canvas = document.createElement('canvas');
             canvas.width = W;
             canvas.height = H;
             const ctx = canvas.getContext('2d');
             ctx.textBaseline = 'alphabetic';
-
-            // Fundo: a própria foto desfocada (preenche o que sobrar em volta)
-            const tc = document.createElement('canvas');
-            tc.width = 36;
-            tc.height = Math.max(8, Math.round(36 * photoH / W));
-            const tcx = tc.getContext('2d');
-            const ts = Math.max(tc.width / img.width, tc.height / img.height);
-            tcx.drawImage(img, (tc.width - img.width * ts) / 2, (tc.height - img.height * ts) / 2, img.width * ts, img.height * ts);
             ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = 'high';
+
+            const tc = document.createElement('canvas');
+            tc.width = 36 * SCALE;
+            tc.height = Math.max(8, Math.round(36 * SCALE * photoH / W));
+            const tcx = tc.getContext('2d');
+            tcx.imageSmoothingEnabled = true;
+            tcx.imageSmoothingQuality = 'high';
+            const ts = Math.max(tc.width / img.width, tc.height / img.height);
+            tcx.drawImage(img, (tc.width - img.width * ts) / 2, (tc.height - img.height * ts) / 2, img.width * ts, img.height * ts);
+            
             ctx.drawImage(tc, 0, 0, W, photoH);
-            ctx.fillStyle = 'rgba(0,0,0,0.25)';
+            ctx.fillStyle = 'rgba(0,0,0,0.35)';
             ctx.fillRect(0, 0, W, photoH);
 
-            // Foto principal inteira, no centro, sem cortar
             const fit = Math.min(W / img.width, photoH / img.height);
-            const dw = img.width * fit, dh = img.height * fit;
-            ctx.drawImage(img, (W - dw) / 2, (photoH - dh) / 2, dw, dh);
+            const dw = img.width * fit;
+            const dh = img.height * fit;
+            const dx = (W - dw) / 2;
+            const dy = (photoH - dh) / 2;
+            
+            ctx.drawImage(img, dx, dy, dw, dh);
 
-            // Painel
             const g = ctx.createLinearGradient(0, photoH, W, H);
             g.addColorStop(0, '#be123c');
             g.addColorStop(1, '#881337');
             ctx.fillStyle = g;
             ctx.fillRect(0, photoH, W, H - photoH);
 
-            let y = photoH + pad;
+            let y = photoH + (28 * SCALE);
 
-            // Nome grande
             ctx.fillStyle = '#ffffff';
             ctx.font = '800 ' + nameSize + 'px ' + font;
             nameLines.forEach(line => { ctx.fillText(line, pad, y + nameSize * 0.85); y += nameLH; });
 
-            // Idade e cidade
             if (subLines.length) {
-                y += 14;
+                y += 6 * SCALE;
                 ctx.fillStyle = '#ffe4e6';
-                ctx.font = '600 42px ' + font;
-                subLines.forEach(line => { ctx.fillText(line, pad, y + 38); y += 54; });
+                ctx.font = '600 ' + (32 * SCALE) + 'px ' + font;
+                subLines.forEach(line => { ctx.fillText(line, pad, y + (30 * SCALE)); y += (40 * SCALE); });
             }
 
-            // Divisória
-            y += 16;
+            y += 12 * SCALE;
             ctx.fillStyle = 'rgba(255,255,255,0.28)';
-            ctx.fillRect(pad, y, W - pad * 2, 2);
-            y += 24;
+            ctx.fillRect(pad, y, W - pad * 2, 2 * SCALE);
+            y += 16 * SCALE;
 
-            // Busca em etiquetas coloridas
             if (pills.length) {
                 const colors = ['#fecdd3', '#fde68a', '#bbf7d0', '#bfdbfe', '#e9d5ff'];
                 ctx.fillStyle = '#fecdd3';
-                ctx.font = '600 28px ' + font;
-                ctx.fillText('💋 Busca', pad, y + 24);
-                y += 40;
+                ctx.font = '600 ' + (22 * SCALE) + 'px ' + font;
+                ctx.fillText('💋 Busca', pad, y + (18 * SCALE));
+                y += 28 * SCALE;
                 pills.forEach((p, i) => {
                     ctx.fillStyle = colors[i % colors.length];
                     ctx.beginPath();
@@ -459,49 +476,68 @@
                     ctx.closePath();
                     ctx.fill();
                     ctx.fillStyle = '#4c0519';
-                    ctx.font = '700 34px ' + font;
-                    ctx.fillText(p.t, x0 + padX, y0 + 43);
+                    ctx.font = '700 ' + (26 * SCALE) + 'px ' + font;
+                    ctx.fillText(p.t, x0 + padX, y0 + (33 * SCALE));
                 });
-                y += pillsH + 26;
+                y += pillsH + (16 * SCALE);
             }
 
-            // Demais campos
-            layout.forEach(r => {
+            pair.forEach((c, i) => {
+                const x = pad + i * (colW + gapCol);
                 ctx.fillStyle = '#fecdd3';
-                ctx.font = '600 28px ' + font;
-                ctx.fillText(r.label, pad, y + 24);
-                y += 40;
+                ctx.font = '600 ' + (20 * SCALE) + 'px ' + font;
+                ctx.fillText(c.label, x, y + (16 * SCALE));
                 ctx.fillStyle = '#ffffff';
-                ctx.font = '600 40px ' + font;
-                r.lines.forEach(line => { ctx.fillText(line, pad, y + 34); y += 52; });
-                y += 22;
+                ctx.font = '600 ' + (30 * SCALE) + 'px ' + font;
+                c.lines.forEach((line, k) => ctx.fillText(line, x, y + (26 * SCALE) + (26 * SCALE) + k * (40 * SCALE)));
             });
+            y += pairH;
 
-            // Rodapé: local, data e aviso
+            if (sobreLines.length) {
+                ctx.fillStyle = '#fecdd3';
+                ctx.font = '600 ' + (20 * SCALE) + 'px ' + font;
+                ctx.fillText('⛓️ Sobre', pad, y + (16 * SCALE));
+                y += 26 * SCALE;
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '600 ' + (30 * SCALE) + 'px ' + font;
+                sobreLines.forEach(line => { ctx.fillText(line, pad, y + (26 * SCALE)); y += (40 * SCALE); });
+                y += 12 * SCALE;
+            }
+
+            if (instaVal) {
+                ctx.fillStyle = '#fecdd3';
+                ctx.font = '600 ' + (20 * SCALE) + 'px ' + font;
+                ctx.fillText('📷 Instagram', pad, y + (16 * SCALE));
+                y += 24 * SCALE;
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '600 ' + (30 * SCALE) + 'px ' + font;
+                ctx.fillText('@' + instaVal, pad, y + (24 * SCALE));
+                y += 34 * SCALE;
+            }
+
             ctx.fillStyle = 'rgba(255,255,255,0.28)';
-            ctx.fillRect(pad, y, W - pad * 2, 2);
-            y += 26;
+            ctx.fillRect(pad, y, W - pad * 2, 2 * SCALE);
+            y += 16 * SCALE;
+
             const hoje = new Date().toLocaleDateString('pt-BR');
+            ctx.font = '600 ' + (18 * SCALE) + 'px ' + font;
+
+            ctx.textAlign = 'left';
             ctx.fillStyle = '#ffe4e6';
-            ctx.font = '600 30px ' + font;
-            ctx.textAlign = 'left';
-            ctx.fillText('Baixada Fluminense • DDD 21', pad, y + 28);
+            ctx.fillText(hoje, pad, y + (16 * SCALE));
+
             ctx.textAlign = 'right';
-            ctx.fillText(hoje, W - pad, y + 28);
-            ctx.textAlign = 'left';
-            y += 50;
             ctx.fillStyle = '#fecdd3';
-            ctx.font = '600 26px ' + font;
-            ctx.fillText('🚫 Proibido compartilhar este cartão fora do grupo.', pad, y + 24);
+            ctx.fillText('🚫 Proibido compartilhar esta imagem sem a autorização do titular.', W - pad, y + (16 * SCALE));
+            ctx.textAlign = 'left';
 
             return new Promise((resolve, reject) => {
                 canvas.toBlob(b => b
-                    ? resolve(new File([b], type === 'image/png' ? 'apresentacao.png' : 'apresentacao.jpg', { type }))
-                    : reject(new Error('canvas')), type, 0.88);
+                    ? resolve(new File([b], 'apresentacao.png', { type: 'image/png' }))
+                    : reject(new Error('canvas')), 'image/png');
             });
         }
 
-        /* ---------- Validação ---------- */
         function validate() {
             if (!$('p_nome').value.trim()) { toast("Preencha o nome ou apelido."); $('p_nome').focus(); return false; }
             const idade = parseInt($('p_idade').value, 10);
@@ -510,7 +546,6 @@
             return true;
         }
 
-        /* ---------- Copiar ---------- */
         async function copyText(text) {
             try {
                 await navigator.clipboard.writeText(text);
@@ -529,28 +564,23 @@
             }
         }
 
-        /* ---------- Enviar ---------- */
         async function send() {
             if (!validate()) return;
             save();
             const text = buildMessage();
 
-            // Começa a copiar já no toque (sem esperar), como garantia caso o WhatsApp ignore o texto
             const copied = copyText(text);
-
             const files = photos.map((p, i) => dataUrlToFile(p, 'foto' + (i + 1) + '.jpg'));
 
-            // 1) Fotos + texto
             if (files.length && navigator.canShare && navigator.canShare({ files })) {
                 try {
                     await navigator.share({ files, text });
                     return;
                 } catch (e) {
-                    if (e && e.name === 'AbortError') return; // pessoa cancelou
+                    if (e && e.name === 'AbortError') return;
                 }
             }
 
-            // 2) Só texto
             if (navigator.share) {
                 try {
                     await navigator.share({ text });
@@ -560,7 +590,6 @@
                 }
             }
 
-            // 3) Sem compartilhamento nativo (computador): copia e abre o grupo
             await copied;
             toast("Ficha copiada! No grupo, cole a mensagem e envie.");
             setTimeout(() => window.open(GROUP_WHATSAPP_LINK, '_blank'), 1200);
@@ -571,7 +600,6 @@
                 (navigator.maxTouchPoints > 1 && /Mac/.test(navigator.platform));
         }
 
-        // Passo 1: valida e mostra a janela de instruções
         let previewUrl = null;
 
         async function openGroup() {
@@ -586,7 +614,7 @@
             let showedImage = false;
             if (photos.length) {
                 try {
-                    const card = await makeCard('image/jpeg');
+                    const card = await makeCard('image/png');
                     previewUrl = URL.createObjectURL(card);
                     img.src = previewUrl;
                     img.classList.remove('hidden');
@@ -605,7 +633,6 @@
             if (previewUrl) { URL.revokeObjectURL(previewUrl); previewUrl = null; }
         }
 
-        // Passo 2: copia (cartão com foto, ou texto) e abre o grupo
         async function confirmOpen() {
             const text = buildMessage();
             let ok = false;
@@ -633,15 +660,16 @@
             photos = [];
             renderGallery();
             $('savedNotice').classList.add('hidden');
+            updateCharCount();
         }
 
-        /* ---------- Eventos ---------- */
-        $('btnPhotos').addEventListener('click', () => $('photoInput').click());
         $('photoInput').addEventListener('change', handlePhotos);
         $('btnOpenGroup').addEventListener('click', openGroup);
         $('btnConfirm').addEventListener('click', confirmOpen);
         $('btnCancel').addEventListener('click', closeModal);
         $('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
+
+        $('p_sobre').addEventListener('input', updateCharCount);
 
         $('p_maior').addEventListener('change', save);
         FIELDS.forEach(id => {
